@@ -23,7 +23,7 @@ eyed3.log.setLevel("ERROR")
 def createSpectrogram(filename,newFilename):
 	#Create temporary mono track if needed
 	if isMono(rawDataPath+filename):
-		command = "cp '{}' '/tmp/{}.mp3'".format(rawDataPath+filename,newFilename)
+		command = "cp '{}' '/tmp/{}.mp3'".format(rawDataPath + filename, newFilename)
 	else:
 		command = "sox '{}' '/tmp/{}.mp3' remix 1,2".format(rawDataPath+filename,newFilename)
 	p = Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True, cwd=currentPath)
@@ -58,13 +58,18 @@ def createSpectrogramsFromAudio():
 				raise
 
 	#Rename files according to genre
-	for index,filename in enumerate(files):
-		print "Creating spectrogram for file {}/{}...".format(index+1,nbFiles)
-		fileGenre = getGenre(rawDataPath+filename)
-		genresID[fileGenre] = genresID[fileGenre] + 1 if fileGenre in genresID else 1
-		fileID = genresID[fileGenre]
-		newFilename = fileGenre+"_"+str(fileID)
-		createSpectrogram(filename,newFilename)
+	for index, filename in enumerate(files):
+		fileGenre = getGenre(rawDataPath + filename)
+		if not fileGenre:
+			print "{}/{} - Not given genre for file {}...".format(index+1, nbFiles, filename)
+		elif fileGenre == "Other" or fileGenre not in eyed3.id3.ID3_GENRES:
+			print "{}/{} - Not valid genre for file {} ({})...".format(index+1, nbFiles, filename, fileGenre)
+		else:
+			print "{}/{} - Creating spectrogram for file {} ({})...".format(index + 1, nbFiles, filename, fileGenre)
+			genresID[fileGenre] = genresID[fileGenre] + 1 if fileGenre in genresID else 1
+			fileID = genresID[fileGenre]
+			newFilename = fileGenre + "_" + str(fileID)
+			createSpectrogram(filename, newFilename)
 
 #Whole pipeline .mp3 -> .png slices
 def createSlicesFromAudio():

@@ -20,12 +20,12 @@ currentPath = os.path.dirname(os.path.realpath(__file__))
 eyed3.log.setLevel("ERROR")
 
 #Create spectrogram from mp3 files
-def createSpectrogram(filename,newFilename):
+def createSpectrogram(filename, newFilename):
 	#Create temporary mono track if needed
 	if isMono(rawDataPath+filename):
 		command = "cp '{}' '/tmp/{}.mp3'".format(rawDataPath + filename, newFilename)
 	else:
-		command = "sox '{}' '/tmp/{}.mp3' remix 1,2".format(rawDataPath+filename,newFilename)
+		command = "sox '{}' '/tmp/{}.mp3' remix 1,2".format(rawDataPath + filename, newFilename)
 	p = Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True, cwd=currentPath)
 	output, errors = p.communicate()
 	if errors:
@@ -33,14 +33,17 @@ def createSpectrogram(filename,newFilename):
 
 	#Create spectrogram
 	filename.replace(".mp3","")
-	command = "sox '/tmp/{}.mp3' -n spectrogram -Y 200 -X {} -m -r -o '{}.png'".format(newFilename,pixelPerSecond,spectrogramsPath+newFilename)
+	command = "sox '/tmp/{}.mp3' -n spectrogram -Y 200 -X {} -m -r -o '{}.png'".format(newFilename, pixelPerSecond, spectrogramsPath + newFilename)
 	p = Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True, cwd=currentPath)
 	output, errors = p.communicate()
 	if errors:
 		print errors
 
 	#Remove tmp mono track
-	os.remove("/tmp/{}.mp3".format(newFilename))
+	try:
+		os.remove("/tmp/{}.mp3".format(newFilename))
+	except:
+		print "newFilename hasnt' been created"
 
 #Creates .png whole spectrograms from mp3 files
 def createSpectrogramsFromAudio():
@@ -61,9 +64,9 @@ def createSpectrogramsFromAudio():
 	for index, filename in enumerate(files):
 		fileGenre = getGenre(rawDataPath + filename)
 		if not fileGenre:
-			print "{}/{} - Not given genre for file {}...".format(index+1, nbFiles, filename)
+			print "{}/{} - Not given genre for file {}...".format(index + 1, nbFiles, filename)
 		elif fileGenre == "Other" or fileGenre not in eyed3.id3.ID3_GENRES:
-			print "{}/{} - Not valid genre for file {} ({})...".format(index+1, nbFiles, filename, fileGenre)
+			print "{}/{} - Not valid genre for file {} ({})...".format(index + 1, nbFiles, filename, fileGenre)
 		else:
 			print "{}/{} - Creating spectrogram for file {} ({})...".format(index + 1, nbFiles, filename, fileGenre)
 			genresID[fileGenre] = genresID[fileGenre] + 1 if fileGenre in genresID else 1
